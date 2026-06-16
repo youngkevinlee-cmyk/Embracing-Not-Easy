@@ -1,0 +1,139 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- GLOBAL HELPERS ---
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    
+    // Check if user is admin safely
+    function isAdmin() { 
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    // --- USERS ---
+    match /users/{userId} {
+      allow read: if isSignedIn() && (isOwner(userId) || isAdmin());
+      // Admin can list users to manage them
+      allow list: if isAdmin();
+      // Allow creation if the UID matches and they set role to guest
+      allow create: if isSignedIn() && isOwner(userId) && 
+                      incoming().role == 'guest' && 
+                      incoming().uid == userId;
+      // Protected role and status update
+      allow update: if isAdmin() 
+                    || (isOwner(userId) && !incoming().diff(existing()).affectedKeys().hasAny(['role', 'isBanned', 'bannedFromGroups']))
+                    || (isOwner(userId) && request.auth.token.email == 'youngkevinlee@gmail.com');
+    }
+
+    // --- USERNAMES ---
+    match /usernames/{username} {
+      allow read: if true;
+      allow create: if isSignedIn() && incoming().uid == request.auth.uid && incoming().username == username;
+      allow delete: if isSignedIn() && existing().uid == request.auth.uid;
+    }
+
+    // --- AUDIO LIBRARY ---
+    match /recordings/{recordingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /folders/{folderId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- BOOKING ---
+    match /sessionTypes/{typeId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /bookings/{bookingId} {
+      allow read: if isSignedIn() && (isOwner(existing().userId) || isAdmin());
+      allow create: if isSignedIn() && isOwner(incoming().userId);
+      allow update, delete: if isAdmin();
+    }
+
+    // --- BLOG & PODCAST ---
+    match /posts/{postId} {
+      // allow list: must use filtering on isPublished if not admin
+      allow read: if existing().isPublished == true || isAdmin();
+      allow write: if isAdmin();
+    }
+    match /episodes/{episodeId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- PRIVATE JOURNAL & TRACKING ---
+    match /users/{userId}/journalEntries/{entryId} {
+      allow read, write: if isOwner(userId);
+    }
+    match /users/{userId}/moods/{moodId} {
+      allow read, write: if isOwner(userId);
+    }
+    match /users/{userId}/habits/{habitId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // --- SHOP ---
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /orders/{orderId} {
+      allow read: if isSignedIn() && (isOwner(existing().userId) || isAdmin());
+      allow create: if isSignedIn() && isOwner(incoming().userId);
+      allow update: if isAdmin();
+    }
+
+    // --- COMMUNITY ---
+    match /groups/{groupId} {
+      // allow list: if even ONE group is secure, guest raw query fails. 
+      // Simplified: authenticated users can see all groups, guests can only see public ones.
+      allow read: if (isSignedIn() || existing().isSecure == false) && 
+                    !(isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isBanned', false) == true);
+      allow write: if isAdmin();
+    }
+    match /groups/{groupId}/messages/{messageId} {
+      allow read: if isSignedIn() && 
+                    !(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isBanned', false) == true);
+      allow create: if isSignedIn() && isOwner(incoming().userId) &&
+                      !(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isBanned', false) == true) &&
+                      !(groupId in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('bannedFromGroups', []));
+      allow delete: if isAdmin();
+    }
+
+    // --- PAGE LOCKS & AVAILABILITY ---
+    match /pageLocks/{pageId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /availability/{dayId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /therapistProfile/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /siteContent/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- CONTACT US MESSAGES ---
+    match /contacts/{contactId} {
+      allow read: if isAdmin();
+      allow list: if isAdmin();
+      allow create: if true;
+      allow update, delete: if isAdmin();
+    }
+  }
+}

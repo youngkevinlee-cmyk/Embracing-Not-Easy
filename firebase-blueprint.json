@@ -1,0 +1,234 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with roles, preferences, and subscription data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "username": { "type": "string" },
+        "role": { "type": "string", "enum": ["guest", "member", "admin"] },
+        "subscriptionEndDate": { "type": "string", "format": "date-time" },
+        "bookmarks": { "type": "array", "items": { "type": "string" } },
+        "purchasedItems": { "type": "array", "items": { "type": "string" } },
+        "preferences": {
+          "type": "object",
+          "properties": {
+            "notificationsEnabled": { "type": "boolean" },
+            "preferredCategories": { "type": "array", "items": { "type": "string" } },
+            "newsletterSubscribed": { "type": "boolean" }
+          }
+        }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "AudioRecording": {
+      "title": "Audio Recording",
+      "description": "Guided imagery audio content",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "audioUrl": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "category": { "type": "string" },
+        "duration": { "type": "number" },
+        "isFree": { "type": "boolean" },
+        "price": { "type": "number" }
+      },
+      "required": ["title", "audioUrl", "isFree"]
+    },
+    "SessionType": {
+      "title": "Session Type",
+      "description": "Hypnotherapy session configuration",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "duration": { "type": "number" }
+      },
+      "required": ["title", "price", "duration"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "User session booking",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "sessionTypeId": { "type": "string" },
+        "startTime": { "type": "string", "format": "date-time" },
+        "endTime": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["confirmed", "cancelled"] },
+        "totalPaid": { "type": "number" }
+      },
+      "required": ["userId", "sessionTypeId", "startTime", "endTime", "status"]
+    },
+    "BlogPost": {
+      "title": "Blog Post",
+      "description": "Educational content with rich text and video",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "category": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "isPublished": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "content", "isPublished", "createdAt"]
+    },
+    "PodcastEpisode": {
+      "title": "Podcast Episode",
+      "description": "Audio podcast episodic content",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "audioUrl": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "category": { "type": "string" },
+        "season": { "type": "number" },
+        "showNotes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "audioUrl", "createdAt"]
+    },
+    "JournalEntry": {
+      "title": "Journal Entry",
+      "description": "Private student journal entry",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "content": { "type": "string" }
+      },
+      "required": ["userId", "date", "content"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Shop items (digital and physical)",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "type": { "type": "string", "enum": ["digital", "physical"] },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "downloadUrl": { "type": "string" }
+      },
+      "required": ["name", "price", "type"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer purchase history",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "items": { "type": "array" },
+        "total": { "type": "number" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "items", "total", "status", "createdAt"]
+    },
+    "CommunityGroup": {
+      "title": "Community Group",
+      "description": "Discussion groups representing topics",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "isSecure": { "type": "boolean" },
+        "allowedRoles": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["name", "isSecure"]
+    },
+    "ChatMessage": {
+      "title": "Chat Message",
+      "description": "Messages within a community group",
+      "type": "object",
+      "properties": {
+        "groupId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["groupId", "userId", "text", "createdAt"]
+    },
+    "PageLock": {
+      "title": "Page Lock",
+      "description": "Control public access to pages",
+      "type": "object",
+      "properties": {
+        "pageId": { "type": "string" },
+        "isLocked": { "type": "boolean" }
+      },
+      "required": ["pageId", "isLocked"]
+    },
+    "SiteContent": {
+      "title": "Site Content",
+      "description": "Dynamic editable site words and headers",
+      "type": "object",
+      "properties": {
+        "contentMap": { "type": "object" }
+      },
+      "required": []
+    },
+    "UsernameClaim": {
+      "title": "Username Claim",
+      "description": "Mapping of lowercase username to auth uid to secure uniqueness",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "username": { "type": "string" }
+      },
+      "required": ["uid", "username"]
+    },
+    "Folder": {
+      "title": "Folder",
+      "description": "Folder bucket for organizing library recordings",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name"]
+    },
+    "ContactMessage": {
+      "title": "ContactMessage",
+      "description": "A message submitted through the Contact Us page",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "message"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": "User", "description": "User profiles" },
+    "/usernames/{username}": { "schema": "UsernameClaim", "description": "Username claims for uniqueness check" },
+    "/recordings/{recordingId}": { "schema": "AudioRecording", "description": "Audio library" },
+    "/folders/{folderId}": { "schema": "Folder", "description": "Folder buckets" },
+    "/sessionTypes/{sessionTypeId}": { "schema": "SessionType", "description": "Session configurations" },
+    "/bookings/{bookingId}": { "schema": "Booking", "description": "Session bookings" },
+    "/posts/{postId}": { "schema": "BlogPost", "description": "Blog content" },
+    "/episodes/{episodeId}": { "schema": "PodcastEpisode", "description": "Podcast episodes" },
+    "/users/{userId}/journalEntries/{entryId}": { "schema": "JournalEntry", "description": "Private journals" },
+    "/products/{productId}": { "schema": "Product", "description": "Inventory" },
+    "/orders/{orderId}": { "schema": "Order", "description": "Customer orders" },
+    "/groups/{groupId}": { "schema": "CommunityGroup", "description": "Chat groups" },
+    "/groups/{groupId}/messages/{messageId}": { "schema": "ChatMessage", "description": "Group messages" },
+    "/pageLocks/{pageId}": { "schema": "PageLock", "description": "Admin page visibility controls" },
+    "/siteContent/{documentId}": { "schema": "SiteContent", "description": "Editable page text content document" },
+    "/contacts/{contactId}": { "schema": "ContactMessage", "description": "Visitor contact submissions" }
+  }
+}
