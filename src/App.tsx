@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from './lib/AuthContext';
 import { PageLockProvider, usePageLocks } from './lib/PageLockContext';
 import { SiteContentProvider } from './lib/SiteContentContext';
 import EditableControls from './components/EditableControls';
+import Chatbot from './components/Chatbot';
 import { 
   Home, 
   Music, 
@@ -262,6 +263,9 @@ export default function App() {
                 
                 {/* Editable live site content controls for administrator */}
                 <EditableControls />
+                
+                {/* Global AI Assistant chatbot */}
+                <Chatbot />
               </div>
             </Router>
           </CartProvider>

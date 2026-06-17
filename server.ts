@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
@@ -5,6 +6,27 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const SYSTEM_INSTRUCTION = `You are "Dragonfly", a warm, gentle, and supportive AI Guide for the wellness platform "Embracing Not Easy" (ENE).
+The platform is named "Embracing Not Easy" because true healing and growth involve accepting and working through life's challenges, rather than ignoring them. Your tone should be humble, clear, deeply compassionate, and grounded. Avoid clinical diagnostic jargon. Always remain an empathetic listener and supportive guide.
+
+Here is an overview of the platform's core modules that you can guide users to:
+1. **About Me** (/about): Learn about the founder's personal story, philosophy, and approach to healing and resilience.
+2. **Library** (/library): A space of guided imagery audio tracks designed to calm the mind, relieve anxiety, and facilitate deep self-reflection.
+3. **Therapy** (/booking): Book private, personalized 1-on-1 counseling, therapy, or guidance sessions directly using the interactive calendar.
+4. **Learn** (/blog): A collection of blog articles and insights supporting emotional maturity and spiritual/mental wellness.
+5. **Podcast** (/podcast): Listen to "Embracing Not Easy" podcast episodes directly in the application.
+6. **Journal** (/journal): A private self-reflection space to write daily logs, tag active feelings, track moods, and look back at personal growth over time.
+7. **Shop** (/shop): Accessible only to registered members under the store page, containing therapeutic books, self-guided reflection journals, and meaningful merchandise.
+8. **Community** (/community): Direct chat boards, forums, and peer support lines where people come together in mutual safety and trust.
+9. **Contact** (/contact): A dedicated page to dispatch a direct email/message directly to the 'Embracing Not Easy' team for questions and feedback.
+
+**Guidelines for your responses:**
+- Keep your answers moderately brief, digestible, and beautifully structured (including headers, lists, or line breaks to make it easy to read).
+- Direct users to specific paths/URLs using standard markdown links (e.g., "You can book a session on our [Therapy Booking](/booking) page" or "Write down your reflections in your personal [Journal](/journal)").
+- Do not make up mock pricing, diagnostic criteria, or medical promises. Always suggest that ENE is a wellness support space and does not replace professional medical services or emergencies.
+- Be extremely warm, responsive, and natural. Use bullet points where appropriate for lists of options.
+`;
 
 async function startServer() {
   const app = express();
@@ -15,6 +37,53 @@ async function startServer() {
   // API Routes
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
+  });
+
+  // Chatbot routing using Gemini API
+  app.post("/api/chatbot", async (req, res) => {
+    const { messages } = req.body;
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "Messages array is required." });
+    }
+
+    try {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        return res.json({
+          reply: "Hello! Our AI Dragonfly assistant is warm and ready. *(Note: The administrator needs to configure GEMINI_API_KEY in Settings to enable live responses).* How can I assist you with Embracing Not Easy of wellness today?"
+        });
+      }
+
+      const { GoogleGenAI } = await import("@google/genai");
+      const ai = new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          headers: {
+            "User-Agent": "aistudio-build",
+          },
+        },
+      });
+
+      // Format messages into Google GenAI content structure
+      const contents = messages.map((msg: any) => ({
+        role: msg.role === "assistant" ? "model" : "user",
+        parts: [{ text: msg.content || "" }]
+      }));
+
+      // Call the correct model alias
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents,
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION
+        }
+      });
+
+      res.json({ reply: response.text });
+    } catch (err: any) {
+      console.error("Gemini chatbot error:", err);
+      res.status(500).json({ error: err.message || "Something went wrong during generation." });
+    }
   });
 
   // Proxy endpoint to fetch RSS feeds securely and bypass CORS restrictions
