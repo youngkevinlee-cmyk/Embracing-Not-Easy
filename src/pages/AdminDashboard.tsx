@@ -48,8 +48,10 @@ import img2 from '../assets/images/regenerated_image_1781623275952.png';
 import img3 from '../assets/images/regenerated_image_1781623277496.png';
 // @ts-ignore
 import img4 from '../assets/images/regenerated_image_1781623279334.png';
+// @ts-ignore
+import img5 from '../assets/images/regenerated_image_1781795554046.png';
 
-const libraryImageOverride = [img0, img1, img2, img3, img4];
+const libraryImageOverride = [img0, img1, img2, img3, img4, img5];
 
 export default function AdminDashboard() {
   const { content, updateText } = useSiteContent();
