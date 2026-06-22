@@ -2,10 +2,6 @@ import "dotenv/config";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const SYSTEM_INSTRUCTION = `You are "Dragonfly", a warm, gentle, and supportive AI Guide for the wellness platform "Embracing Not Easy" (ENE).
 The platform is named "Embracing Not Easy" because true healing and growth involve accepting and working through life's challenges, rather than ignoring them. Your tone should be humble, clear, deeply compassionate, and grounded. Avoid clinical diagnostic jargon. Always remain an empathetic listener and supportive guide.

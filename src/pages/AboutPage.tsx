@@ -4,7 +4,7 @@ import { Sparkles, Heart, ShieldCheck, Milestone, HelpingHand, Award } from 'luc
 import EditableText from '../components/EditableText';
 import EditableImage from '../components/EditableImage';
 // @ts-ignore
-import aboutPortrait from '../assets/images/regenerated_image_1780939111959.jpg';
+import aboutPortrait from '../assets/images/regenerated_image_1782149091740.png';
 
 export default function AboutPage() {
   // Default professional welcoming profile portrait

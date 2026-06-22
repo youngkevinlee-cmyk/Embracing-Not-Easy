@@ -10,22 +10,103 @@ import EditableText from '../components/EditableText';
 
 const getEmbedUrl = (url: string) => {
   if (!url) return "";
-  const trimmed = url.trim();
-  
-  // 1. Regular expression to match various YouTube URLs (watch, embed, shorts, v/vi, youtu.be)
+  let trimmed = url.trim();
+
+  // Handle double slash prefix (protocol relative URLs)
+  if (trimmed.startsWith('//')) {
+    trimmed = 'https:' + trimmed;
+  }
+
+  // 0. Extract src from complete iframe code if pasted instead of a URL
+  if (trimmed.startsWith('<iframe') || trimmed.includes('src=')) {
+    const srcMatch = trimmed.match(/src=["']([^"']+)["']/);
+    if (srcMatch && srcMatch[1]) {
+      return getEmbedUrl(srcMatch[1]);
+    }
+  }
+
+  // 0.5. Check if it is a raw 11-character YouTube Video ID
+  if (trimmed.length === 11 && /^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+    return `https://www.youtube.com/embed/${trimmed}?autoplay=1&rel=0`;
+  }
+
+  // 1. Dropbox raw video streaming
+  if (trimmed.includes('dropbox.com')) {
+    let cleanUrl = trimmed.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
+    cleanUrl = cleanUrl.replace('?dl=0', '').replace('&dl=0', '');
+    if (!cleanUrl.includes('?')) {
+      cleanUrl += '?raw=1';
+    } else if (!cleanUrl.includes('raw=1')) {
+      cleanUrl += '&raw=1';
+    }
+    return cleanUrl;
+  }
+
+  // 2. Google Drive preview player
+  const driveRegExp = /(?:drive\.google\.com\/file\/d\/|drive\.google\.com\/open\?id=)([a-zA-Z0-9_-]+)/;
+  const driveMatch = trimmed.match(driveRegExp);
+  if (driveMatch && driveMatch[1]) {
+    return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+  }
+
+  // 3. Vimeo player mapper
+  const vimeoRegExp = /(?:vimeo\.com\/|player\.vimeo\.com\/video\/)([0-9]+)/;
+  const vimeoMatch = trimmed.match(vimeoRegExp);
+  if (vimeoMatch && vimeoMatch[1]) {
+    return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`;
+  }
+
+  // 4. Loom video embed mapper
+  const loomRegExp = /(?:loom\.com\/share\/|loom\.com\/embed\/)([a-zA-Z0-9_-]+)/;
+  const loomMatch = trimmed.match(loomRegExp);
+  if (loomMatch && loomMatch[1]) {
+    return `https://www.loom.com/embed/${loomMatch[1]}?autoplay=1`;
+  }
+
+  // 5. Wistia video embed mapper
+  const wistiaRegExp = /(?:wistia\.com\/medias\/|fast\.wistia\.net\/embed\/iframe\/)([a-zA-Z0-9]+)/;
+  const wistiaMatch = trimmed.match(wistiaRegExp);
+  if (wistiaMatch && wistiaMatch[1]) {
+    return `https://fast.wistia.net/embed/iframe/${wistiaMatch[1]}?autoPlay=true`;
+  }
+
+  // 6. YouTube URLs matcher
   const ytRegExp = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?vi?=|&vi?=))([^#\&\?]*).*/;
   const match = trimmed.match(ytRegExp);
   if (match && match[1] && match[1].length === 11) {
-    return `https://www.youtube.com/embed/${match[1]}?autoplay=1`;
+    return `https://www.youtube.com/embed/${match[1]}?autoplay=1&rel=0`;
   }
 
-  // 2. Fallback regex to capture any raw 11-char ID from standard paths
+  // 7. Fallback standard YouTube regex
   const fallbackRegExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
   const fallbackMatch = trimmed.match(fallbackRegExp);
   if (fallbackMatch && fallbackMatch[1]) {
-    return `https://www.youtube.com/embed/${fallbackMatch[1]}?autoplay=1`;
+    return `https://www.youtube.com/embed/${fallbackMatch[1]}?autoplay=1&rel=0`;
   }
+
   return trimmed;
+};
+
+const isEmbeddable = (url: string) => {
+  if (!url) return false;
+  const l = url.toLowerCase().trim();
+  // If it is a raw 11-char YouTube ID
+  if (l.length === 11 && /^[a-zA-Z0-9_-]{11}$/.test(l)) return true;
+  return (
+    l.startsWith('<iframe') ||
+    l.includes('src=') ||
+    l.includes('youtube.com') ||
+    l.includes('youtu.be') ||
+    l.includes('youtube-nocookie.com') ||
+    l.includes('vimeo.com') ||
+    l.includes('vimeocdn.com') ||
+    l.includes('loom.com') ||
+    l.includes('wistia.com') ||
+    l.includes('wistia.net') ||
+    l.includes('drive.google.com') ||
+    l.includes('embed') ||
+    l.includes('preview')
+  );
 };
 
 export default function BlogPage() {
@@ -232,14 +313,23 @@ export default function BlogPage() {
 
                 <div className="p-8 md:p-12 space-y-8">
                   {selectedPost.videoUrl && (
-                    <div className="aspect-video bg-stone-100 rounded-3xl overflow-hidden border border-stone-100">
-                       <iframe 
-                        className="w-full h-full"
-                        src={getEmbedUrl(selectedPost.videoUrl)} 
-                        title="Embedded video"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                       />
+                    <div className="aspect-video bg-stone-100 rounded-3xl overflow-hidden border border-stone-100 relative">
+                      {isEmbeddable(selectedPost.videoUrl) ? (
+                        <iframe 
+                          className="w-full h-full"
+                          src={getEmbedUrl(selectedPost.videoUrl)} 
+                          title="Embedded video"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <video 
+                          className="w-full h-full object-contain"
+                          src={getEmbedUrl(selectedPost.videoUrl)}
+                          controls
+                          autoPlay
+                        />
+                      )}
                     </div>
                   )}
                   

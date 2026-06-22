@@ -721,7 +721,7 @@ export default function AdminDashboard() {
                         <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 mb-1">Video URL (YouTube Embed or direct MP4)</label>
                         <input 
                           placeholder="e.g. https://www.youtube.com/embed/... or .mp4"
-                          className="p-3 rounded-xl border border-stone-200 text-xs"
+                          className="p-3 rounded-xl border border-stone-200 text-xs bg-white hover:border-stone-400 focus:border-stone-900 focus:ring-1 focus:ring-stone-900/10 focus:outline-none transition-all shadow-sm font-mono text-stone-700"
                           value={newRec.videoUrl || ''}
                           onChange={e => setNewRec({...newRec, videoUrl: e.target.value})}
                         />
@@ -731,7 +731,7 @@ export default function AdminDashboard() {
                         <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 mb-1">Audio URL (Direct MP3 link)</label>
                         <input 
                           placeholder="e.g. https://www.soundhelix.com/examples/...mp3"
-                          className="p-3 rounded-xl border border-stone-200 text-xs"
+                          className="p-3 rounded-xl border border-stone-200 text-xs bg-white hover:border-stone-400 focus:border-stone-900 focus:ring-1 focus:ring-stone-900/10 focus:outline-none transition-all shadow-sm font-mono text-stone-700"
                           value={newRec.audioUrl || ''}
                           onChange={e => setNewRec({...newRec, audioUrl: e.target.value})}
                         />
@@ -950,7 +950,7 @@ export default function AdminDashboard() {
                               <div className="flex flex-col">
                                 <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 mb-1">Video URL (YouTube Embed or direct MP4)</label>
                                 <input 
-                                  className="p-3 rounded-xl border border-stone-200 text-xs bg-white"
+                                  className="p-3 rounded-xl border border-stone-200 text-xs bg-white hover:border-stone-400 focus:border-stone-900 focus:ring-1 focus:ring-stone-900/10 focus:outline-none transition-all shadow-sm font-mono text-stone-700"
                                   value={editRec.videoUrl || ''}
                                   onChange={e => setEditRec({...editRec, videoUrl: e.target.value})}
                                 />
@@ -959,7 +959,7 @@ export default function AdminDashboard() {
                               <div className="flex flex-col">
                                 <label className="text-[10px] font-bold uppercase tracking-wider text-stone-500 mb-1">Audio URL (Direct MP3 link)</label>
                                 <input 
-                                  className="p-3 rounded-xl border border-stone-200 text-xs bg-white"
+                                  className="p-3 rounded-xl border border-stone-200 text-xs bg-white hover:border-stone-400 focus:border-stone-900 focus:ring-1 focus:ring-stone-900/10 focus:outline-none transition-all shadow-sm font-mono text-stone-700"
                                   value={editRec.audioUrl || ''}
                                   onChange={e => setEditRec({...editRec, audioUrl: e.target.value})}
                                 />
