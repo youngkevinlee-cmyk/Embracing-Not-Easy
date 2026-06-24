@@ -7,7 +7,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../lib/AuthContext';
 import EditableText from '../components/EditableText';
 // @ts-ignore
-import heroImage from '../assets/images/regenerated_image_1780927457457.jpg';
+import heroImage from '../assets/images/regenerated_image_1782314735662.png';
 
 export default function LandingPage() {
   const { user, profile } = useAuth();
