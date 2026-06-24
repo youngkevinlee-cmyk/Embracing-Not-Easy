@@ -10,6 +10,7 @@ interface Message {
 }
 
 const SUGGESTIONS = [
+  { text: 'Show the Welcome Onboarding guide', label: '✨ App Tour' },
   { text: 'What is guided imagery?', label: 'Guided Imagery' },
   { text: 'How do I log my daily mood in the Journal?', label: 'Mood Journaling' },
   { text: 'How can I book a session with a therapist?', label: 'Counselling & Bookings' },
@@ -32,6 +33,45 @@ How can I guide you through our platform today? You can ask me how to use the jo
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Listen to external custom events
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    const handleStartTour = () => {
+      setIsOpen(true);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'user',
+          content: 'Please show me around the app and give me an AI Tour!',
+          timestamp: new Date()
+        },
+        {
+          role: 'assistant',
+          content: `Welcome to your **Guided App Tour**! I'm Dragonfly, and I'd love to help you get familiar with our features. 
+
+Here is how you can use **Embracing Not Easy**:
+
+1. **[Library](/library)**: Access deep audio experiences, customized breathing loops, and guided soundscapes designed to stabilize your focus and support mindful transitions.
+2. **[Counselling & Bookings](/booking)**: Connect and schedule live therapy sessions with our certified resident professionals seamlessly.
+3. **[Mood Journal](/journal)** (Requires login): A secure place to document and track your emotional wellness, tracking trends over time.
+4. **[Community support](/community)** (Requires login): Share and discuss life's struggles with peer support on our fully moderated and safe community space.
+5. **[About Me](/about)**: Read about our founder's story, mission, and the philosophy of accepting hardship.
+
+If you ever want to re-access this welcome tour prompt visually, you can select the **"App Tour"** button right here below. How can I assist you on your journey today?`,
+          timestamp: new Date()
+        }
+      ]);
+    };
+
+    window.addEventListener('open-dragonfly-guide', handleOpen);
+    window.addEventListener('start-dragonfly-tour', handleStartTour);
+
+    return () => {
+      window.removeEventListener('open-dragonfly-guide', handleOpen);
+      window.removeEventListener('start-dragonfly-tour', handleStartTour);
+    };
+  }, []);
+
   // Auto scroll to the bottom when messages update
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -45,6 +85,12 @@ How can I guide you through our platform today? You can ask me how to use the jo
 
   const handleSend = async (textToSend: string) => {
     if (!textToSend.trim() || isLoading) return;
+
+    if (textToSend === 'Show the Welcome Onboarding guide') {
+      setIsOpen(false);
+      window.dispatchEvent(new CustomEvent('open-welcome-tour'));
+      return;
+    }
 
     const userMessage: Message = {
       role: 'user',

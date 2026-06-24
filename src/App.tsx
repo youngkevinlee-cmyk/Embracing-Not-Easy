@@ -7,6 +7,7 @@ import { PageLockProvider, usePageLocks } from './lib/PageLockContext';
 import { SiteContentProvider } from './lib/SiteContentContext';
 import EditableControls from './components/EditableControls';
 import Chatbot from './components/Chatbot';
+import WelcomePrompt from './components/WelcomePrompt';
 import { 
   Home, 
   Music, 
@@ -266,6 +267,9 @@ export default function App() {
                 
                 {/* Global AI Assistant chatbot */}
                 <Chatbot />
+
+                {/* Onboarding welcome guide */}
+                <WelcomePrompt />
               </div>
             </Router>
           </CartProvider>
